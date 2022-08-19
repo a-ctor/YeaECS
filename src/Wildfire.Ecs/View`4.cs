@@ -70,10 +70,7 @@ public struct View<T1, T2, T3, T4> : IView, IViewEnumerator
         throw new InvalidOperationException("The specified component is not part of the view.");
     }
 
-    public ViewEnumerator<View<T1, T2, T3, T4>> GetEnumerator()
-    {
-        return new ViewEnumerator<View<T1, T2, T3, T4>>(ref this);
-    }
+    public ViewEnumerator<View<T1, T2, T3, T4>> GetEnumerator() => new(ref this);
 
     /// <inheritdoc />
     EntityReference IViewEnumerator.Current => new(_entityRegistry, _current);
