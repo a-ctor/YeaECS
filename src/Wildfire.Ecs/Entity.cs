@@ -27,6 +27,12 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>, ICompar
         get => Unsafe.As<Entity, long>(ref Unsafe.AsRef(in this));
     }
 
+    internal void Deconstruct(out uint generation, out uint id)
+    {
+        generation = Generation;
+        id = Id;
+    }
+
     /// <inheritdoc />
     public bool Equals(Entity other) => Value == other.Value;
 
