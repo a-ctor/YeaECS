@@ -51,19 +51,19 @@ public class CombinedView<TView, TOptionalView> : IView, IViewEnumerator
         var result = _view.MoveNext();
         if (!result)
         {
-            _optionalView.MoveTo(EntityId.Null);
+            _optionalView.MoveTo(Entity.Null);
             return false;
         }
 
-        _optionalView.MoveTo(_view.Current.Id);
+        _optionalView.MoveTo(_view.Current.Entity);
         return true;
     }
 
     /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(EntityId entityId)
+    bool IViewEnumerator.MoveTo(Entity entity)
     {
-        var result = _view.MoveTo(entityId);
-        _optionalView.MoveTo(entityId);
+        var result = _view.MoveTo(entity);
+        _optionalView.MoveTo(entity);
 
         return result;
     }

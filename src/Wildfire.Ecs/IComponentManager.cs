@@ -4,11 +4,11 @@ internal interface IComponentManager
 {
     Type ComponentType { get; }
 
-    object GetComponentBoxed(EntityId id);
+    object GetComponentBoxed(Entity entity);
 
-    bool TryGetComponentBoxed(EntityId id, out object? component);
+    bool TryGetComponentBoxed(Entity entity, out object? component);
 
-    bool HasComponent(EntityId id);
+    bool HasComponent(Entity entity);
 
-    void RemoveComponent(EntityId id);
+    void RemoveComponent(Entity entity);
 }

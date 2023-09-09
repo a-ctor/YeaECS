@@ -9,7 +9,7 @@ public class View<T1, T2> : IView, IViewEnumerator
     private readonly EntityRegistry _entityRegistry;
     private readonly int _preferredEnumerator;
 
-    private EntityId _current;
+    private Entity _current;
     private ComponentManager<T1>.Enumerator _enumerator1;
     private ComponentManager<T2>.Enumerator _enumerator2;
 
@@ -19,7 +19,7 @@ public class View<T1, T2> : IView, IViewEnumerator
         ComponentManager<T2>.Enumerator enumerator2)
     {
         _entityRegistry = entityRegistry;
-        _current = EntityId.Null;
+        _current = Entity.Null;
         _enumerator1 = enumerator1;
         _enumerator2 = enumerator2;
         
@@ -64,7 +64,7 @@ public class View<T1, T2> : IView, IViewEnumerator
         {
             while (_enumerator1.MoveNext())
             {
-                var entityId = _enumerator1.CurrentEntityId;
+                var entityId = _enumerator1.CurrentEntity;
                 if (!_enumerator2.MoveTo(entityId))
                     continue;
 
@@ -76,7 +76,7 @@ public class View<T1, T2> : IView, IViewEnumerator
         {
             while (_enumerator2.MoveNext())
             {
-                var entityId = _enumerator2.CurrentEntityId;
+                var entityId = _enumerator2.CurrentEntity;
                 if (!_enumerator1.MoveTo(entityId))
                     continue;
 
@@ -85,13 +85,13 @@ public class View<T1, T2> : IView, IViewEnumerator
             }
         }
         
-        _current = EntityId.Null;
+        _current = Entity.Null;
         return false;
     }
 
     /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(EntityId entityId)
+    bool IViewEnumerator.MoveTo(Entity entity)
     {
-        return _enumerator1.MoveTo(entityId) & _enumerator2.MoveTo(entityId);
+        return _enumerator1.MoveTo(entity) & _enumerator2.MoveTo(entity);
     }
 }

@@ -62,9 +62,9 @@ public struct OptionalView<T1, T2> : IView, IOptionalViewEnumerator
     }
 
     /// <inheritdoc />
-    void IOptionalViewEnumerator.MoveTo(EntityId entityId)
+    void IOptionalViewEnumerator.MoveTo(Entity entity)
     {
-        _hasItem1 = _enumerator1.MoveTo(entityId);
-        _hasItem2 = _enumerator2.MoveTo(entityId);
+        _hasItem1 = _enumerator1.MoveTo(entity);
+        _hasItem2 = _enumerator2.MoveTo(entity);
     }
 }

@@ -7,14 +7,14 @@ public class EntityRegistry
     internal ref struct BuilderToken
     {
         public readonly EntityRegistry EntityRegistry;
-        public readonly EntityId Id;
+        public readonly Entity Entity;
 
         private bool _disposed;
 
-        public BuilderToken(EntityRegistry entityRegistry, EntityId id)
+        public BuilderToken(EntityRegistry entityRegistry, Entity entity)
         {
             EntityRegistry = entityRegistry;
-            Id = id;
+            Entity = entity;
             _disposed = false;
         }
 
@@ -24,7 +24,7 @@ public class EntityRegistry
                 return;
 
             _disposed = true;
-            EntityRegistry.OnEntityCreated?.Invoke(new EntityReference(EntityRegistry, Id));
+            EntityRegistry.OnEntityCreated?.Invoke(new EntityReference(EntityRegistry, Entity));
         }
     }
 
@@ -51,13 +51,13 @@ public class EntityRegistry
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public EntityReference CreateReference(EntityId entityId) => new(this, entityId);
+    public EntityReference CreateReference(Entity entity) => new(this, entity);
 
     /// <summary>
-    /// Creates a new entity, returning its id.
+    /// Creates a new entity, returning a reference that can be used to interact with the entity.
     /// </summary>
     /// <remarks>
-    /// Keep the returned entity id if you want to refer to the entity at a later point.
+    /// Keep the returned entity if you want to refer to the entity at a later point.
     /// </remarks>
     public EntityReference CreateEntity()
     {
@@ -79,85 +79,85 @@ public class EntityRegistry
     }
 
     /// <summary>
-    /// Checks if an entity with the specified <paramref name="id"/> exists.
+    /// Checks if an entity with the specified <paramref name="entity"/> exists.
     /// </summary>
-    public bool HasEntity(EntityId id)
+    public bool HasEntity(Entity entity)
     {
-        return _entityManager.HasEntity(id);
+        return _entityManager.HasEntity(entity);
     }
 
     /// <summary>
-    /// Destroys an entity with the specified <paramref name="id"/> and all its components.
+    /// Destroys an entity with the specified <paramref name="entity"/> and all its components.
     /// </summary>
-    public void DestroyEntity(EntityId id)
+    public void DestroyEntity(Entity entity)
     {
-        OnEntityDeleting?.Invoke(new EntityReference(this, id));
+        OnEntityDeleting?.Invoke(new EntityReference(this, entity));
 
-        _entityManager.DestroyEntity(id);
+        _entityManager.DestroyEntity(entity);
         foreach (var componentManager in _componentManagers.Values)
-            componentManager.RemoveComponent(id);
+            componentManager.RemoveComponent(entity);
 
-        OnEntityDeleted?.Invoke(id);
+        OnEntityDeleted?.Invoke(entity);
     }
 
     /// <summary>
-    /// Adds the specified <paramref name="component"/> to the entity with the specified <paramref name="id"/>.
+    /// Adds the specified <paramref name="component"/> to the entity with the specified <paramref name="entity"/>.
     /// Throws if the specified entity does not exist.
     /// </summary>
-    public void AddComponent<TComponent>(EntityId id, in TComponent component)
+    public void AddComponent<TComponent>(Entity entity, in TComponent component)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
         var componentManager = _componentManagers.GetOrAdd<TComponent>();
-        componentManager.AddComponent(id, in component);
+        componentManager.AddComponent(entity, in component);
     }
 
     /// <summary>
-    /// Checks if the entity with the specified <paramref name="id"/> has a component of <typeparamref name="TComponent"/>.
+    /// Checks if the entity with the specified <paramref name="entity"/> has a component of <typeparamref name="TComponent"/>.
     /// Throws if the specified entity does not exist.
     /// </summary>
-    public bool HasComponent<TComponent>(EntityId id)
+    public bool HasComponent<TComponent>(Entity entity)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
-        return _componentManagers.TryGet<TComponent>(out var componentManager) && componentManager.HasComponent(id);
+        return _componentManagers.TryGet<TComponent>(out var componentManager) && componentManager.HasComponent(entity);
     }
 
     /// <summary>
-    /// Returns a reference to the component of the entity with the specified <paramref name="id"/>.
+    /// Returns a reference to the component of the entity with the specified <paramref name="entity"/>.
     /// Throws if the specified entity is not found or no component is found.
     /// </summary>
-    public ref TComponent GetComponent<TComponent>(EntityId id)
+    public ref TComponent GetComponent<TComponent>(Entity entity)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (!_componentManagers.TryGet<TComponent>(out var componentManager))
-            throw new InvalidOperationException($"Could not find a component '{typeof(TComponent)}' for entity with id {id}.");
+            throw new InvalidOperationException($"Could not find a component '{typeof(TComponent)}' for entity {entity}.");
 
-        return ref componentManager.GetComponent(id);
+        return ref componentManager.GetComponent(entity);
     }
 
     /// <summary>
-    /// Returns a reference to the component of the entity with the specified <paramref name="id"/> or a reference to an uninitialized <typeparamref name="TComponent"/>.
+    /// Returns a reference to the component of the entity with the specified <paramref name="entity"/> or a reference to an uninitialized <typeparamref name="TComponent"/>.
     /// Throws if the specified entity is not found
     /// </summary>
-    public ref TComponent GetOrAddComponent<TComponent>(EntityId id)
+    public ref TComponent GetOrAddComponent<TComponent>(Entity entity)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
         var componentManager = _componentManagers.GetOrAdd<TComponent>();
-        return ref componentManager.GetOrAddComponent(id);
+        return ref componentManager.GetOrAddComponent(entity);
     }
 
     /// <summary>
-    /// Tries to get the component of the entity with the specified <paramref name="id"/>.
+    /// Tries to get the component of the entity with the specified <paramref name="entity"/>.
     /// Throws if the specified entity does not exist.
     /// </summary>
     /// <remarks>
@@ -165,31 +165,31 @@ public class EntityRegistry
     /// A dummy reference is returned if <paramref name="success"/> is <c>false</c>.
     /// The data of this dummy reference is undefined.
     /// </remarks>
-    public ref TComponent TryGetComponent<TComponent>(EntityId id, out bool success)
+    public ref TComponent TryGetComponent<TComponent>(Entity entity, out bool success)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (_componentManagers.TryGet<TComponent>(out var componentManager))
-            return ref componentManager.TryGetComponent(id, out success);
+            return ref componentManager.TryGetComponent(entity, out success);
 
         success = false;
         return ref RefDummy<TComponent>.Value;
     }
 
     /// <summary>
-    /// Removes the specified <typeparamref name="TComponent"/> from the entity with the specified <paramref name="id"/>.
+    /// Removes the specified <typeparamref name="TComponent"/> from the entity with the specified <paramref name="entity"/>.
     /// Throws if the specified entity does not exist.
     /// </summary>
-    public void RemoveComponent<TComponent>(EntityId id)
+    public void RemoveComponent<TComponent>(Entity entity)
         where TComponent : struct
     {
-        if (!HasEntity(id))
+        if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (!_componentManagers.TryGet<TComponent>(out var componentManager))
             return;
 
-        componentManager.RemoveComponent(id);
+        componentManager.RemoveComponent(entity);
     }
 
     /// <summary>

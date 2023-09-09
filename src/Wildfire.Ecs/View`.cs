@@ -7,13 +7,13 @@ public class View<T1> : IView, IViewEnumerator
 {
     private readonly EntityRegistry _entityRegistry;
 
-    private EntityId _current;
+    private Entity _current;
     private ComponentManager<T1>.Enumerator _enumerator;
 
     internal View(EntityRegistry entityRegistry, ComponentManager<T1>.Enumerator enumerator)
     {
         _entityRegistry = entityRegistry;
-        _current = EntityId.Null;
+        _current = Entity.Null;
         _enumerator = enumerator;
     }
 
@@ -50,15 +50,15 @@ public class View<T1> : IView, IViewEnumerator
     {
         var result = _enumerator.MoveNext();
         _current = result
-            ? _enumerator.CurrentEntityId
-            : EntityId.Null;
+            ? _enumerator.CurrentEntity
+            : Entity.Null;
 
         return result;
     }
 
     /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(EntityId entityId)
+    bool IViewEnumerator.MoveTo(Entity entity)
     {
-        return _enumerator.MoveTo(entityId);
+        return _enumerator.MoveTo(entity);
     }
 }

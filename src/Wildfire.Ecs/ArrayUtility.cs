@@ -3,28 +3,28 @@
 internal static class ArrayUtility
 {
     /// <summary>
-    /// Finds the correct insertion index in an <see cref="EntityId"/> array so that the array stays sorted.
-    /// Throws if the <paramref name="entityId"/> already exists.
+    /// Finds the correct insertion index in an <see cref="Entity"/> array so that the array stays sorted.
+    /// Throws if the <paramref name="entity"/> already exists.
     /// </summary>
-    public static int FindEntityIdInsertionIndex(EntityId[] data, int size, EntityId entityId)
+    public static int FindEntityInsertionIndex(Entity[] data, int size, Entity entity)
     {
         int left = 0, right = size;
         if (right == 0)
             return 0;
 
         // optimization for the append case
-        if (entityId > data[right - 1])
+        if (entity > data[right - 1])
             return right;
 
         while (left < right)
         {
             var middle = (left + right) / 2;
             var value = data[middle];
-            if (value < entityId)
+            if (value < entity)
             {
                 left = middle + 1;
             }
-            else if (value > entityId)
+            else if (value > entity)
             {
                 right = middle;
             }

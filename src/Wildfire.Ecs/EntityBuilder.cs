@@ -6,7 +6,7 @@ public ref struct EntityBuilder
 {
     private EntityRegistry.BuilderToken _token;
     
-    public EntityReference Reference => new(_token.EntityRegistry, _token.Id);
+    public EntityReference Reference => new(_token.EntityRegistry, _token.Entity);
 
     internal EntityBuilder(EntityRegistry.BuilderToken token)
     {
@@ -20,9 +20,9 @@ public ref struct EntityBuilder
     {
         get
         {
-            var id = _token.Id;
+            var entity = _token.Entity;
             return _token.EntityRegistry.GetComponentManagers
-                .Select(e => (e.TryGetComponentBoxed(id, out var component), component))
+                .Select(e => (e.TryGetComponentBoxed(entity, out var component), component))
                 .Where(e => e.Item1)
                 .Select(e => e.component)
                 .ToArray()!;
@@ -42,6 +42,6 @@ public ref struct EntityBuilder
     public void AddComponent<TComponent>(in TComponent component)
         where TComponent : struct
     {
-        _token.EntityRegistry.AddComponent(_token.Id, in component);
+        _token.EntityRegistry.AddComponent(_token.Entity, in component);
     }
 }

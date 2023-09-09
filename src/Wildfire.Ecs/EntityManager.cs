@@ -5,7 +5,7 @@
 /// </summary>
 internal class EntityManager
 {
-    private readonly EntityId[] _entities;
+    private readonly Entity[] _entities;
 
     private uint _nextId = 1;
 
@@ -16,22 +16,22 @@ internal class EntityManager
     public EntityManager(int capacity)
     {
         Capacity = capacity;
-        _entities = new EntityId[capacity];
+        _entities = new Entity[capacity];
         EntityCount = 0;
     }
 
     /// <summary>
-    /// Creates a new entity, returning its id.
+    /// Creates a new entity, returning a reference that can be used to interact with the entity.
     /// </summary>
     /// <remarks>
-    /// Keep the returned entity id if you want to refer to the entity at a later point.
+    /// Keep the returned entity if you want to refer to the entity at a later point.
     /// </remarks>
-    public EntityId CreateEntity()
+    public Entity CreateEntity()
     {
         if (EntityCount == Capacity)
             throw new InvalidOperationException("Cannot create entity as the entity capacity has been reached.");
 
-        var entityId = new EntityId(_nextId);
+        var entityId = new Entity(_nextId);
         _nextId++;
 
         _entities[EntityCount] = entityId;
@@ -41,20 +41,20 @@ internal class EntityManager
     }
 
     /// <summary>
-    /// Checks if an entity with the specified <paramref name="id"/> exists.
+    /// Checks if an entity with the specified <paramref name="entity"/> exists.
     /// </summary>
-    public bool HasEntity(EntityId id)
+    public bool HasEntity(Entity entity)
     {
-        var index = Array.BinarySearch(_entities, 0, EntityCount, id);
+        var index = Array.BinarySearch(_entities, 0, EntityCount, entity);
         return index >= 0;
     }
 
     /// <summary>
-    /// Destroys an entity with the specified <paramref name="id"/> and all its components.
+    /// Destroys an entity with the specified <paramref name="entity"/> and all its components.
     /// </summary>
-    public void DestroyEntity(EntityId id)
+    public void DestroyEntity(Entity entity)
     {
-        var index = Array.BinarySearch(_entities, 0, EntityCount, id);
+        var index = Array.BinarySearch(_entities, 0, EntityCount, entity);
         if (index < 0)
             return;
 

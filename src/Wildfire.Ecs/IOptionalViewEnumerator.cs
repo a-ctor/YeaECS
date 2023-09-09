@@ -2,5 +2,5 @@
 
 public interface IOptionalViewEnumerator
 {
-    void MoveTo(EntityId entityId);
+    void MoveTo(Entity entity);
 }

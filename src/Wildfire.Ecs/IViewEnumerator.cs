@@ -6,5 +6,5 @@ public interface IViewEnumerator
 
     bool MoveNext();
 
-    bool MoveTo(EntityId entityId);
+    bool MoveTo(Entity entity);
 }

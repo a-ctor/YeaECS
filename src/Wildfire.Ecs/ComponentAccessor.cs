@@ -17,26 +17,26 @@ public readonly ref struct ComponentAccessor<T>
         _componentManager = componentManager;
     }
 
-    public bool HasComponent(EntityReference entity) => HasComponent(entity.Id);
+    public bool HasComponent(EntityReference entity) => HasComponent(entity.Entity);
 
-    public bool HasComponent(EntityId id) => _componentManager?.HasComponent(id) ?? false;
+    public bool HasComponent(Entity entity) => _componentManager?.HasComponent(entity) ?? false;
 
-    public ref T GetComponent(EntityReference entity) => ref GetComponent(entity.Id);
+    public ref T GetComponent(EntityReference entity) => ref GetComponent(entity.Entity);
 
-    public ref T GetComponent(EntityId id)
+    public ref T GetComponent(Entity entity)
     {
         if (_componentManager == null)
-            throw new InvalidOperationException($"Could not find a component '{typeof(T)}' for entity with entity {id}.");
+            throw new InvalidOperationException($"Could not find a component '{typeof(T)}' for entity {entity}.");
 
-        return ref _componentManager.GetComponent(id);
+        return ref _componentManager.GetComponent(entity);
     }
 
-    public ref T TryGetComponent(EntityReference entity, out bool success) => ref TryGetComponent(entity.Id, out success);
+    public ref T TryGetComponent(EntityReference entity, out bool success) => ref TryGetComponent(entity.Entity, out success);
 
-    public ref T TryGetComponent(EntityId id, out bool success)
+    public ref T TryGetComponent(Entity entity, out bool success)
     {
         if (_componentManager != null)
-            return ref _componentManager.TryGetComponent(id, out success);
+            return ref _componentManager.TryGetComponent(entity, out success);
 
         success = false;
         return ref RefDummy<T>.Value;

@@ -7,7 +7,7 @@ using Xunit;
 
 public class ComponentEnumeratorTest
 {
-    private record struct EntityDescription(EntityId Id, bool HasComponent1, bool HasComponent2, bool HasComponent3, bool HasComponent4, bool HasComponent5);
+    private record struct EntityDescription(Entity Entity, bool HasComponent1, bool HasComponent2, bool HasComponent3, bool HasComponent4, bool HasComponent5);
 
     private record struct Component1();
 
@@ -55,102 +55,102 @@ public class ComponentEnumeratorTest
             if (hasComponent5)
                 entity.AddComponent(new Component5());
 
-            _entityDescriptions.Add(new EntityDescription(entity.Id, hasComponent1, hasComponent2, hasComponent3, hasComponent4, hasComponent5));
+            _entityDescriptions.Add(new EntityDescription(entity.Entity, hasComponent1, hasComponent2, hasComponent3, hasComponent4, hasComponent5));
         }
     }
 
     [Fact]
     public void EnumerateView_OneRequiredComponents()
     {
-        var actualEntityIds = new List<EntityId>();
+        var actualEntities = new List<Entity>();
 
         var view = _entityRegistry.ViewOf<Component1>();
         foreach (var entity in view)
         {
             Assert.Equal(entity.EntityRegistry, _entityRegistry);
-            actualEntityIds.Add(entity.Id);
+            actualEntities.Add(entity.Entity);
         }
 
         var expectedEntityIds = _entityDescriptions
             .Where(e => e.HasComponent1)
-            .Select(e => e.Id)
+            .Select(e => e.Entity)
             .ToArray();
-        Assert.Equal(expectedEntityIds, actualEntityIds);
+        Assert.Equal(expectedEntityIds, actualEntities);
     }
 
     [Fact]
     public void EnumerateView_TwoRequiredComponents()
     {
-        var actualEntityIds = new List<EntityId>();
+        var actualEntities = new List<Entity>();
 
         var view = _entityRegistry.ViewOf<Component1, Component2>();
         foreach (var entity in view)
         {
             Assert.Equal(entity.EntityRegistry, _entityRegistry);
-            actualEntityIds.Add(entity.Id);
+            actualEntities.Add(entity.Entity);
         }
 
         var expectedEntityIds = _entityDescriptions
             .Where(e => e.HasComponent1 && e.HasComponent2)
-            .Select(e => e.Id)
+            .Select(e => e.Entity)
             .ToArray();
-        Assert.Equal(expectedEntityIds, actualEntityIds);
+        Assert.Equal(expectedEntityIds, actualEntities);
     }
 
     [Fact]
     public void EnumerateView_ThreeRequiredComponents()
     {
-        var actualEntityIds = new List<EntityId>();
+        var actualEntities = new List<Entity>();
 
         var view = _entityRegistry.ViewOf<Component1, Component2, Component3>();
         foreach (var entity in view)
         {
             Assert.Equal(entity.EntityRegistry, _entityRegistry);
-            actualEntityIds.Add(entity.Id);
+            actualEntities.Add(entity.Entity);
         }
 
         var expectedEntityIds = _entityDescriptions
             .Where(e => e.HasComponent1 && e.HasComponent2 && e.HasComponent3)
-            .Select(e => e.Id)
+            .Select(e => e.Entity)
             .ToArray();
-        Assert.Equal(expectedEntityIds, actualEntityIds);
+        Assert.Equal(expectedEntityIds, actualEntities);
     }
 
     [Fact]
     public void EnumerateView_FourRequiredComponents()
     {
-        var actualEntityIds = new List<EntityId>();
+        var actualEntities = new List<Entity>();
 
         var view = _entityRegistry.ViewOf<Component1, Component2, Component3, Component4>();
         foreach (var entity in view)
         {
             Assert.Equal(entity.EntityRegistry, _entityRegistry);
-            actualEntityIds.Add(entity.Id);
+            actualEntities.Add(entity.Entity);
         }
 
         var expectedEntityIds = _entityDescriptions
             .Where(e => e.HasComponent1 && e.HasComponent2 && e.HasComponent3 && e.HasComponent4)
-            .Select(e => e.Id)
+            .Select(e => e.Entity)
             .ToArray();
-        Assert.Equal(expectedEntityIds, actualEntityIds);
+        Assert.Equal(expectedEntityIds, actualEntities);
     }
 
     [Fact]
     public void EnumerateView_FiveRequiredComponents()
     {
-        var actualEntityIds = new List<EntityId>();
+        var actualEntities = new List<Entity>();
 
         var view = _entityRegistry.ViewOf<Component1, Component2, Component3, Component4, Component5>();
         foreach (var entity in view)
         {
             Assert.Equal(entity.EntityRegistry, _entityRegistry);
-            actualEntityIds.Add(entity.Id);
+            actualEntities.Add(entity.Entity);
         }
 
         var expectedEntityIds = _entityDescriptions
             .Where(e => e.HasComponent1 && e.HasComponent2 && e.HasComponent3 && e.HasComponent4 && e.HasComponent5)
-            .Select(e => e.Id)
+            .Select(e => e.Entity)
             .ToArray();
-        Assert.Equal(expectedEntityIds, actualEntityIds);
+        Assert.Equal(expectedEntityIds, actualEntities);
     }
 }

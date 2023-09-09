@@ -39,10 +39,10 @@ public class EntityManagerTest
     public void HasEntity()
     {
         var entityManager = new EntityManager(3);
-        Assert.False(entityManager.HasEntity(new EntityId(1)));
+        Assert.False(entityManager.HasEntity(new Entity(1)));
 
         entityManager.CreateEntity();
-        Assert.True(entityManager.HasEntity(new EntityId(1)));
+        Assert.True(entityManager.HasEntity(new Entity(1)));
     }
 
     [Fact]
@@ -60,6 +60,6 @@ public class EntityManagerTest
     public void DestroyEntity_WithNonExistentEntity_DoesNothing()
     {
         var entityManager = new EntityManager(3);
-        entityManager.DestroyEntity(new EntityId(1));
+        entityManager.DestroyEntity(new Entity(1));
     }
 }

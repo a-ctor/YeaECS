@@ -20,8 +20,8 @@ public readonly ref struct ViewEnumerator<TView>
         return _view.MoveNext();
     }
 
-    public bool MoveTo(EntityId entityId)
+    public bool MoveTo(Entity entity)
     {
-        return _view.MoveTo(entityId);
+        return _view.MoveTo(entity);
     }
 }

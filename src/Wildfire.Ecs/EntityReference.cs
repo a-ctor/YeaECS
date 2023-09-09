@@ -3,12 +3,12 @@
 using System.Runtime.CompilerServices;
 
 /// <summary>
-/// Represents the combination of <see cref="Ecs.EntityRegistry"/> and <see cref="EntityId"/> for better usability.
+/// Represents the combination of <see cref="Ecs.EntityRegistry"/> and <see cref="Ecs.Entity"/> for better usability.
 /// </summary>
 public readonly struct EntityReference
 {
     public readonly EntityRegistry EntityRegistry;
-    public readonly EntityId Id;
+    public readonly Entity Entity;
 
     /// <summary>
     /// Checks if this entity exists.
@@ -16,13 +16,13 @@ public readonly struct EntityReference
     public bool Exists
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => EntityRegistry.HasEntity(Id);
+        get => EntityRegistry.HasEntity(Entity);
     }
 
-    public EntityReference(EntityRegistry entityRegistry, EntityId id)
+    public EntityReference(EntityRegistry entityRegistry, Entity entity)
     {
         EntityRegistry = entityRegistry;
-        Id = id;
+        Entity = entity;
     }
 
     /// <summary>
@@ -32,9 +32,9 @@ public readonly struct EntityReference
     {
         get
         {
-            var id = Id;
+            var entity = Entity;
             return EntityRegistry.GetComponentManagers
-                .Select(e => (e.TryGetComponentBoxed(id, out var component), component))
+                .Select(e => (e.TryGetComponentBoxed(entity, out var component), component))
                 .Where(e => e.Item1)
                 .Select(e => e.component)
                 .ToArray()!;
@@ -47,7 +47,7 @@ public readonly struct EntityReference
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Destroy()
     {
-        EntityRegistry.DestroyEntity(Id);
+        EntityRegistry.DestroyEntity(Entity);
     }
 
     /// <summary>
@@ -58,7 +58,7 @@ public readonly struct EntityReference
     public void AddComponent<TComponent>(in TComponent component)
         where TComponent : struct
     {
-        EntityRegistry.AddComponent(Id, in component);
+        EntityRegistry.AddComponent(Entity, in component);
     }
 
     /// <summary>
@@ -69,7 +69,7 @@ public readonly struct EntityReference
     public bool HasComponent<TComponent>()
         where TComponent : struct
     {
-        return EntityRegistry.HasComponent<TComponent>(Id);
+        return EntityRegistry.HasComponent<TComponent>(Entity);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public readonly struct EntityReference
     public ref TComponent GetComponent<TComponent>()
         where TComponent : struct
     {
-        return ref EntityRegistry.GetComponent<TComponent>(Id);
+        return ref EntityRegistry.GetComponent<TComponent>(Entity);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public readonly struct EntityReference
     public ref TComponent GetOrAddComponent<TComponent>()
         where TComponent : struct
     {
-        return ref EntityRegistry.GetOrAddComponent<TComponent>(Id);
+        return ref EntityRegistry.GetOrAddComponent<TComponent>(Entity);
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public readonly struct EntityReference
     public ref TComponent TryGetComponent<TComponent>(out bool success)
         where TComponent : struct
     {
-        return ref EntityRegistry.TryGetComponent<TComponent>(Id, out success);
+        return ref EntityRegistry.TryGetComponent<TComponent>(Entity, out success);
     }
 
     /// <summary>
@@ -118,6 +118,6 @@ public readonly struct EntityReference
     public void RemoveComponent<TComponent>()
         where TComponent : struct
     {
-        EntityRegistry.RemoveComponent<TComponent>(Id);
+        EntityRegistry.RemoveComponent<TComponent>(Entity);
     }
 }

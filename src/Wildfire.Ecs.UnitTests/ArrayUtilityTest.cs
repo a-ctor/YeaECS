@@ -14,18 +14,18 @@ public class ArrayUtilityTest
     [InlineData(new uint[] { 1, 3, 5, 6 }, 4, 2)] 
     [InlineData(new uint[] { 1, 3, 5, 6 }, 0, 0)] 
     [InlineData(new uint[] { 1, 3, 5, 6 }, 10, 4)] 
-    public void FindEntityIdInsertionIndex(uint[] data, uint insert, int expected)
+    public void FindEntityInsertionIndex(uint[] data, uint insert, int expected)
     {
-        var entityIds = data.Select(e => new EntityId(e)).ToArray();
-        var actual = ArrayUtility.FindEntityIdInsertionIndex(entityIds, entityIds.Length, new EntityId(insert));
+        var entities = data.Select(e => new Entity(e)).ToArray();
+        var actual = ArrayUtility.FindEntityInsertionIndex(entities, entities.Length, new Entity(insert));
         Assert.Equal(expected, actual);
     }
 
     [Fact]
-    public void FindEntityIdInsertionIndex_WithExistingEntityDefinition_Throws()
+    public void FindEntityInsertionIndex_WithExistingEntityDefinition_Throws()
     {
         var data = new uint[] { 1, 2, 3};
-        var entityIds = data.Select(e => new EntityId(e)).ToArray();
-        Assert.Throws<InvalidOperationException>(() => ArrayUtility.FindEntityIdInsertionIndex(entityIds, entityIds.Length, new EntityId(2)));
+        var entities = data.Select(e => new Entity(e)).ToArray();
+        Assert.Throws<InvalidOperationException>(() => ArrayUtility.FindEntityInsertionIndex(entities, entities.Length, new Entity(2)));
     }
 }
