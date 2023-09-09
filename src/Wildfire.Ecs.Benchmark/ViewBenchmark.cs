@@ -71,7 +71,7 @@ public class ViewBenchmark
         var view = _entityRegistry.ViewOf<Component1>();
         foreach (var entity in view)
         {
-            ref var component1 = ref view.Get<Component1>();
+            ref var component1 = ref entity.GetComponent<Component1>();
 
             total += component1.Value;
         }
@@ -87,8 +87,8 @@ public class ViewBenchmark
         var view = _entityRegistry.ViewOf<Component2, Component1>();
         foreach (var entity in view)
         {
-            ref var component1 = ref view.Get<Component1>();
-            ref var component2 = ref view.Get<Component2>();
+            ref var component1 = ref entity.GetComponent<Component1>();
+            ref var component2 = ref entity.GetComponent<Component2>();
 
             total += component1.Value;
             total += component2.Value;
@@ -105,9 +105,9 @@ public class ViewBenchmark
         var view = _entityRegistry.ViewOf<Component3, Component2, Component1>();
         foreach (var entity in view)
         {
-            ref var component1 = ref view.Get<Component1>();
-            ref var component2 = ref view.Get<Component2>();
-            ref var component3 = ref view.Get<Component3>();
+            ref var component1 = ref entity.GetComponent<Component1>();
+            ref var component2 = ref entity.GetComponent<Component2>();
+            ref var component3 = ref entity.GetComponent<Component3>();
 
             total += component1.Value;
             total += component2.Value;
@@ -125,10 +125,10 @@ public class ViewBenchmark
         var view = _entityRegistry.ViewOf<Component4, Component3, Component2, Component1>();
         foreach (var entity in view)
         {
-            ref var component1 = ref view.Get<Component1>();
-            ref var component2 = ref view.Get<Component2>();
-            ref var component3 = ref view.Get<Component3>();
-            ref var component4 = ref view.Get<Component4>();
+            ref var component1 = ref entity.GetComponent<Component1>();
+            ref var component2 = ref entity.GetComponent<Component2>();
+            ref var component3 = ref entity.GetComponent<Component3>();
+            ref var component4 = ref entity.GetComponent<Component4>();
 
             total += component1.Value;
             total += component2.Value;
@@ -147,11 +147,11 @@ public class ViewBenchmark
         var view = _entityRegistry.ViewOf<Component5, Component4, Component3, Component2, Component1>();
         foreach (var entity in view)
         {
-            ref var component1 = ref view.Get<Component1>();
-            ref var component2 = ref view.Get<Component2>();
-            ref var component3 = ref view.Get<Component3>();
-            ref var component4 = ref view.Get<Component4>();
-            ref var component5 = ref view.Get<Component5>();
+            ref var component1 = ref entity.GetComponent<Component1>();
+            ref var component2 = ref entity.GetComponent<Component2>();
+            ref var component3 = ref entity.GetComponent<Component3>();
+            ref var component4 = ref entity.GetComponent<Component4>();
+            ref var component5 = ref entity.GetComponent<Component5>();
 
             total += component1.Value;
             total += component2.Value;

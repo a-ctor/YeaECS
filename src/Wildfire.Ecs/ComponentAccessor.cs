@@ -1,58 +1,49 @@
 ﻿namespace Wildfire.Ecs;
 
+using System.Runtime.CompilerServices;
+
 /// <summary>
 /// Provides a read-only view of a <see cref="ComponentManager{T}"/>, which improves performance for bulk operations.
 /// </summary>
-public readonly ref struct ComponentAccessor<T>
-    where T : struct
+public readonly ref struct ComponentAccessor<TComponent>
+    where TComponent : struct
 {
     private readonly EntityRegistry _entityRegistry;
-    private readonly ComponentManager<T>? _componentManager;
+    private readonly ComponentManager<TComponent> _componentManager;
 
-    public bool IsDefault => _componentManager == null;
-
-    internal ComponentAccessor(EntityRegistry entityRegistry, ComponentManager<T> componentManager)
+    internal ComponentAccessor(EntityRegistry entityRegistry, ComponentManager<TComponent> componentManager)
     {
         _entityRegistry = entityRegistry;
         _componentManager = componentManager;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SparseSetEnumerator GetEnumerator() => _componentManager.GetEnumerator();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool HasComponent(EntityReference entity) => HasComponent(entity.Entity);
 
-    public bool HasComponent(Entity entity) => _componentManager?.HasComponent(entity) ?? false;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool HasComponent(Entity entity) => _componentManager.HasComponent(entity);
 
-    public ref T GetComponent(EntityReference entity) => ref GetComponent(entity.Entity);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent GetComponent(EntityReference entity) => ref GetComponent(entity.Entity);
 
-    public ref T GetComponent(Entity entity)
-    {
-        if (_componentManager == null)
-            throw new InvalidOperationException($"Could not find a component '{typeof(T)}' for entity {entity}.");
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent GetComponent(Entity entity) => ref _componentManager.GetComponent(entity);
 
-        return ref _componentManager.GetComponent(entity);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent GetComponentOrNullRef(EntityReference entity) => ref _componentManager.GetComponentOrNullRef(entity.Entity);
 
-    public ref T TryGetComponent(EntityReference entity, out bool success) => ref TryGetComponent(entity.Entity, out success);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent GetComponentOrNullRef(Entity entity) => ref _componentManager.GetComponentOrNullRef(entity);
 
-    public ref T TryGetComponent(Entity entity, out bool success)
-    {
-        if (_componentManager != null)
-            return ref _componentManager.TryGetComponent(entity, out success);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent TryGetComponent(EntityReference entity, out bool success) => ref TryGetComponent(entity.Entity, out success);
 
-        success = false;
-        return ref RefDummy<T>.Value;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref TComponent TryGetComponent(Entity entity, out bool success) => ref _componentManager.TryGetComponent(entity, out success);
 
-    public View<T> GetView()
-    {
-        return _componentManager != null
-            ? new View<T>(_entityRegistry, _componentManager.GetEnumerator())
-            : new View<T>(_entityRegistry, default);
-    }
-
-    internal ComponentManager<T>.Enumerator GetInternalEnumerator()
-    {
-        return _componentManager != null
-            ? _componentManager.GetEnumerator()
-            : default;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public View<TComponent> GetView() => new(_entityRegistry, _componentManager);
 }

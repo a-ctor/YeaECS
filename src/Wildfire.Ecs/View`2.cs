@@ -1,97 +1,37 @@
 ﻿namespace Wildfire.Ecs;
 
-using System.Runtime.CompilerServices;
-
-public class View<T1, T2> : IView, IViewEnumerator
+public class View<T1, T2>
     where T1 : struct
     where T2 : struct
 {
-    private readonly EntityRegistry _entityRegistry;
-    private readonly int _preferredEnumerator;
+    private static bool T21Filter(View<T1, T2> view, Entity entity)
+    {
+        return view._componentManager1.HasComponent(entity);
+    }
 
-    private Entity _current;
-    private ComponentManager<T1>.Enumerator _enumerator1;
-    private ComponentManager<T2>.Enumerator _enumerator2;
+    private static bool T12Filter(View<T1, T2> view, Entity entity)
+    {
+        return view._componentManager2.HasComponent(entity);
+    }
+
+    private readonly EntityRegistry _entityRegistry;
+    private readonly ComponentManager<T1> _componentManager1;
+    private readonly ComponentManager<T2> _componentManager2;
 
     internal View(
         EntityRegistry entityRegistry,
-        ComponentManager<T1>.Enumerator enumerator1,
-        ComponentManager<T2>.Enumerator enumerator2)
+        ComponentManager<T1> componentManager1,
+        ComponentManager<T2> componentManager2)
     {
         _entityRegistry = entityRegistry;
-        _current = Entity.Null;
-        _enumerator1 = enumerator1;
-        _enumerator2 = enumerator2;
-        
-        _preferredEnumerator = _enumerator2.ComponentCount < _enumerator1.ComponentCount ? 1 : 0; 
+        _componentManager1 = componentManager1;
+        _componentManager2 = componentManager2;
     }
 
-    /// <inheritdoc />
-    public bool Supports<TComponent>()
-        where TComponent : struct
+    public unsafe ViewEnumerator<View<T1, T2>> GetEnumerator()
     {
-        return typeof(TComponent) == typeof(T1) || typeof(TComponent) == typeof(T2);
-    }
-
-    /// <inheritdoc />
-    bool IView.Has<TComponent>()
-    {
-        return Supports<TComponent>();
-    }
-
-    /// <inheritdoc />
-    public ref TComponent Get<TComponent>()
-        where TComponent : struct
-    {
-        if (typeof(TComponent) == typeof(T1))
-            return ref Unsafe.As<T1, TComponent>(ref _enumerator1.Current);
-
-        if (typeof(TComponent) == typeof(T2))
-            return ref Unsafe.As<T2, TComponent>(ref _enumerator2.Current);
-
-        throw new InvalidOperationException("The specified component is not part of the view.");
-    }
-
-    public ViewEnumerator<View<T1, T2>> GetEnumerator() => new(this);
-
-    /// <inheritdoc />
-    EntityReference IViewEnumerator.Current => new(_entityRegistry, _current);
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveNext()
-    {
-        if (_preferredEnumerator == 0)
-        {
-            while (_enumerator1.MoveNext())
-            {
-                var entityId = _enumerator1.CurrentEntity;
-                if (!_enumerator2.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-        else
-        {
-            while (_enumerator2.MoveNext())
-            {
-                var entityId = _enumerator2.CurrentEntity;
-                if (!_enumerator1.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-        
-        _current = Entity.Null;
-        return false;
-    }
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(Entity entity)
-    {
-        return _enumerator1.MoveTo(entity) & _enumerator2.MoveTo(entity);
+        return _componentManager1.ComponentCount < _componentManager2.ComponentCount
+            ? new ViewEnumerator<View<T1, T2>>(_entityRegistry, this, &T12Filter, _componentManager1.GetEnumerator())
+            : new ViewEnumerator<View<T1, T2>>(_entityRegistry, this, &T21Filter, _componentManager2.GetEnumerator());
     }
 }

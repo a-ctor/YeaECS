@@ -5,9 +5,10 @@
 /// </summary>
 internal class EntityManager
 {
-    private readonly Entity[] _entities;
+    // todo add id reuse via generations and improve tracking of entities
+    private readonly uint[] _entityGenerations;
 
-    private uint _nextId = 1;
+    private uint _nextId = 0;
 
     public int Capacity { get; }
 
@@ -16,7 +17,7 @@ internal class EntityManager
     public EntityManager(int capacity)
     {
         Capacity = capacity;
-        _entities = new Entity[capacity];
+        _entityGenerations = new uint[capacity];
         EntityCount = 0;
     }
 
@@ -31,10 +32,10 @@ internal class EntityManager
         if (EntityCount == Capacity)
             throw new InvalidOperationException("Cannot create entity as the entity capacity has been reached.");
 
-        var entityId = new Entity(0, _nextId); // todo implement support for generations
-        _nextId++;
+        var id = _nextId++;
+        var generation = ++_entityGenerations[id];
+        var entityId = new Entity(generation, id);
 
-        _entities[EntityCount] = entityId;
         EntityCount++;
 
         return entityId;
@@ -45,8 +46,8 @@ internal class EntityManager
     /// </summary>
     public bool HasEntity(Entity entity)
     {
-        var index = Array.BinarySearch(_entities, 0, EntityCount, entity);
-        return index >= 0;
+        var index = entity.Id;
+        return index < _entityGenerations.Length && _entityGenerations[index] == entity.Generation;
     }
 
     /// <summary>
@@ -54,11 +55,11 @@ internal class EntityManager
     /// </summary>
     public void DestroyEntity(Entity entity)
     {
-        var index = Array.BinarySearch(_entities, 0, EntityCount, entity);
-        if (index < 0)
-            return;
-
-        ArrayUtility.RemoveAt(_entities, EntityCount, index);
-        EntityCount--;
+        var index = entity.Id;
+        if (index < _entityGenerations.Length && _entityGenerations[index] == entity.Generation)
+        {
+            _entityGenerations[index]++;
+            EntityCount--;
+        }
     }
 }

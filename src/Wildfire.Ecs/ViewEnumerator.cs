@@ -1,27 +1,46 @@
 ﻿namespace Wildfire.Ecs;
 
-public readonly ref struct ViewEnumerator<TView>
-    where TView : class, IViewEnumerator
+using System.Collections;
+
+public unsafe struct ViewEnumerator<TFilterObj> : IEnumerator<EntityReference>
 {
-    private readonly TView _view;
+    private readonly EntityRegistry _entityRegistry;
+    private readonly delegate*<TFilterObj, Entity, bool> _filter;
+    private readonly TFilterObj _filterObj;
 
-    public ViewEnumerator(TView view)
+    private SparseSetEnumerator _enumerator;
+
+    public ViewEnumerator(EntityRegistry entityRegistry, TFilterObj filterObj, delegate*<TFilterObj, Entity, bool> filter, SparseSetEnumerator enumerator)
     {
-        if (view == null)
-            throw new ArgumentNullException(nameof(view));
-
-        _view = view;
+        _entityRegistry = entityRegistry;
+        _filterObj = filterObj;
+        _filter = filter;
+        _enumerator = enumerator;
     }
 
-    public EntityReference Current => _view.Current;
+    /// <inheritdoc />
+    object IEnumerator.Current => Current;
 
+    /// <inheritdoc />
+    public EntityReference Current => new(_entityRegistry, _enumerator.Current);
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
+
+    /// <inheritdoc />
     public bool MoveNext()
     {
-        return _view.MoveNext();
+        while (_enumerator.MoveNext())
+        {
+            if (_filter(_filterObj, _enumerator.Current))
+                return true;
+        }
+
+        return false;
     }
 
-    public bool MoveTo(Entity entity)
-    {
-        return _view.MoveTo(entity);
-    }
+    /// <inheritdoc />
+    public void Reset() => _enumerator.Reset();
 }

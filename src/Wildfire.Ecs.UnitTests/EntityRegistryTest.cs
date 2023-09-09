@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Moq;
 using Xunit;
 
@@ -51,7 +52,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        Assert.False(entityRegistry.HasEntity(new Entity(0, 1)));
+        Assert.False(entityRegistry.HasEntity(new Entity(1, 1)));
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class EntityRegistryTest
         entityRegistry.CreateEntity();
         Assert.Equal(1, entityRegistry.EntityCount);
 
-        entityRegistry.DestroyEntity(new Entity(0, 2));
+        entityRegistry.DestroyEntity(new Entity(1, 2));
         Assert.Equal(1, entityRegistry.EntityCount);
     }
 
@@ -92,7 +93,7 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
 
         var testComponent = new TestComponent(3);
-        Assert.Throws<InvalidOperationException>(() => entityRegistry.AddComponent(new Entity(0, 1), in testComponent));
+        Assert.Throws<InvalidOperationException>(() => entityRegistry.AddComponent(new Entity(1, 1), in testComponent));
     }
 
     [Fact]
@@ -121,7 +122,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        Assert.Throws<InvalidOperationException>(() => entityRegistry.HasComponent<TestComponent>(new Entity(0, 2)));
+        Assert.Throws<InvalidOperationException>(() => entityRegistry.HasComponent<TestComponent>(new Entity(1, 2)));
     }
 
     [Fact]
@@ -142,7 +143,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.GetComponent<TestComponent>(new Entity(0, 2)));
+        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.GetComponent<TestComponent>(new Entity(1, 2)));
         Assert.Equal("The specified entity does not exist.", ex.Message);
     }
 
@@ -153,7 +154,7 @@ public class EntityRegistryTest
         var entity = entityRegistry.CreateEntity();
 
         var ex = Assert.Throws<InvalidOperationException>(() => entity.GetComponent<TestComponent>());
-        Assert.Equal("Could not find a component 'Wildfire.Ecs.UnitTests.TestComponent' for entity <1@0>.", ex.Message);
+        Assert.Equal("Could not find a component 'Wildfire.Ecs.UnitTests.TestComponent' for entity <0@1>.", ex.Message);
     }
 
     [Fact]
@@ -174,7 +175,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.GetOrAddComponent<TestComponent>(new Entity(0, 2)));
+        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.GetOrAddComponent<TestComponent>(new Entity(1, 2)));
         Assert.Equal("The specified entity does not exist.", ex.Message);
     }
 
@@ -201,7 +202,6 @@ public class EntityRegistryTest
         entity.AddComponent(new TestComponent(3));
 
         var accessor = entityRegistry.GetComponentAccessor<TestComponent>();
-        Assert.False(accessor.IsDefault);
 
         Assert.True(accessor.HasComponent(entity));
         Assert.Equal(3, accessor.GetComponent(entity).Value);
@@ -210,8 +210,8 @@ public class EntityRegistryTest
 
         var results = new List<int>();
         var view = accessor.GetView();
-        foreach (var value in view)
-            results.Add(view.Get<TestComponent>().Value);
+        foreach (var entityRef in view)
+            results.Add(entityRef.GetComponent<TestComponent>().Value);
         Assert.Single(results, 3);
     }
 
@@ -225,17 +225,16 @@ public class EntityRegistryTest
         entity.RemoveComponent<TestComponent>();
 
         var accessor = entityRegistry.GetComponentAccessor<TestComponent>();
-        Assert.False(accessor.IsDefault);
 
         Assert.False(accessor.HasComponent(entity));
         Assert.Throws<InvalidOperationException>(() => entityRegistry.GetComponentAccessor<TestComponent>().GetComponent(entity).Value);
-        Assert.Equal(0, accessor.TryGetComponent(entity, out var success).Value);
+        Assert.True(Unsafe.IsNullRef(ref accessor.TryGetComponent(entity, out var success)));
         Assert.False(success);
 
         var results = new List<int>();
         var view = accessor.GetView();
-        foreach (var value in view)
-            results.Add(view.Get<TestComponent>().Value);
+        foreach (var entityRef in view)
+            results.Add(entityRef.GetComponent<TestComponent>().Value);
         Assert.Empty(results);
     }
 
@@ -246,17 +245,16 @@ public class EntityRegistryTest
         var entity = entityRegistry.CreateEntity();
 
         var accessor = entityRegistry.GetComponentAccessor<TestComponent>();
-        Assert.True(accessor.IsDefault);
 
         Assert.False(accessor.HasComponent(entity));
         Assert.Throws<InvalidOperationException>(() => entityRegistry.GetComponentAccessor<TestComponent>().GetComponent(entity).Value);
-        Assert.Equal(0, accessor.TryGetComponent(entity, out var success).Value);
+        Assert.True(Unsafe.IsNullRef(ref accessor.TryGetComponent(entity, out var success).Value));
         Assert.False(success);
 
         var results = new List<int>();
         var view = accessor.GetView();
-        foreach (var value in view)
-            results.Add(view.Get<TestComponent>().Value);
+        foreach (var entityRef in view)
+            results.Add(entityRef.GetComponent<TestComponent>().Value);
         Assert.Empty(results);
     }
 
@@ -279,7 +277,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.TryGetComponent<TestComponent>(new Entity(0, 2), out var success));
+        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.TryGetComponent<TestComponent>(new Entity(1, 2), out var success));
         Assert.Equal("The specified entity does not exist.", ex.Message);
     }
 
@@ -322,7 +320,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.RemoveComponent<TestComponent>(new Entity(0, 2)));
+        var ex = Assert.Throws<InvalidOperationException>(() => entityRegistry.RemoveComponent<TestComponent>(new Entity(1, 2)));
         Assert.Equal("The specified entity does not exist.", ex.Message);
     }
 
@@ -332,19 +330,19 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
 
         var entityCreatedEventHandlerMock = new Mock<EntityCreatedEventHandler>();
-        entityCreatedEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(0, 1))));
+        entityCreatedEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(1, 0))));
         entityRegistry.OnEntityCreated += entityCreatedEventHandlerMock.Object;
 
         var entityCreatingEventHandlerMock = new Mock<EntityCreatingEventHandler>();
-        entityCreatingEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(0, 1))));
+        entityCreatingEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(1, 0))));
         entityRegistry.OnEntityCreating += entityCreatingEventHandlerMock.Object;
 
         var builder = entityRegistry.BuildEntity();
-        entityCreatingEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(0, 1))));
-        entityCreatedEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(0, 1))), Times.Never());
+        entityCreatingEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(1, 0))));
+        entityCreatedEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(1, 0))), Times.Never());
         
         builder.Dispose();
-        entityCreatedEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(0, 1))));
+        entityCreatedEventHandlerMock.Verify(e => e(new EntityReference(entityRegistry, new Entity(1, 0))));
 
         entityCreatingEventHandlerMock.VerifyAll();
     }
@@ -355,7 +353,7 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
 
         var entityCreatedEventHandlerMock = new Mock<EntityCreatedEventHandler>();
-        entityCreatedEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(0, 1))));
+        entityCreatedEventHandlerMock.Setup(e => e(new EntityReference(entityRegistry, new Entity(1, 0))));
         entityRegistry.OnEntityCreated += entityCreatedEventHandlerMock.Object;
 
         entityRegistry.CreateEntity();

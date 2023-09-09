@@ -1,12 +1,22 @@
 ﻿namespace Wildfire.Ecs;
 
-internal readonly struct ComponentManagerLookup
+internal struct ComponentManagerLookup
 {
-    private readonly int _capacity;
-    private readonly Dictionary<Type, IComponentManager> _componentManagers = new();
+    // ReSharper disable once UnusedTypeParameter
+    private static class ComponentIndex<TComponent>
+    {
+        public static readonly int Index = Interlocked.Increment(ref s_lastIndex);
+    }
 
-    public IEnumerable<IComponentManager> Values => _componentManagers.Values;
-    
+    private static int s_lastIndex = -1;
+
+    private readonly int _capacity;
+    private readonly List<IComponentManager> _componentManagers = new();
+
+    private IComponentManager?[] _componentManagerLookup = new IComponentManager[64];
+
+    public IEnumerable<IComponentManager> Values => _componentManagers;
+
     public ComponentManagerLookup(int capacity)
     {
         _capacity = capacity;
@@ -15,19 +25,42 @@ internal readonly struct ComponentManagerLookup
     public ComponentManager<T> GetOrAdd<T>()
         where T : struct
     {
-        if (_componentManagers.TryGetValue(typeof(T), out var result))
-            return (ComponentManager<T>)result;
+        var index = ComponentIndex<T>.Index;
+        var componentManager = index < _componentManagerLookup.Length
+            ? (ComponentManager<T>?)_componentManagerLookup[index]
+            : null;
 
-        var componentManager = new ComponentManager<T>(_capacity);
-        _componentManagers[typeof(T)] = componentManager;
+        if (componentManager != null)
+            return componentManager;
+
+        componentManager = new ComponentManager<T>(_capacity);
+
+        if (index >= _componentManagerLookup.Length)
+            ResizeToFit(index);
+
+        _componentManagerLookup[index] = componentManager;
+        _componentManagers.Add(componentManager);
+
         return componentManager;
     }
 
     public bool TryGet<T>(out ComponentManager<T> componentManager)
         where T : struct
     {
-        var success = _componentManagers.TryGetValue(typeof(T), out var result);
-        componentManager = (ComponentManager<T>)result!;
-        return success;
+        var index = ComponentIndex<T>.Index;
+        componentManager = (index < _componentManagerLookup.Length
+            ? (ComponentManager<T>?)_componentManagerLookup[index]
+            : null)!;
+
+        return componentManager != null;
+    }
+
+    private void ResizeToFit(int index)
+    {
+        var size = _componentManagerLookup.Length;
+        while (size <= index)
+            size *= 2;
+        
+        Array.Resize(ref _componentManagerLookup, size);
     }
 }

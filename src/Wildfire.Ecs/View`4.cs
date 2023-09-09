@@ -1,153 +1,139 @@
 ﻿namespace Wildfire.Ecs;
 
-using System.Runtime.CompilerServices;
-
-public class View<T1, T2, T3, T4> : IView, IViewEnumerator
+public class View<T1, T2, T3, T4>
     where T1 : struct
     where T2 : struct
     where T3 : struct
     where T4 : struct
 {
-    private readonly EntityRegistry _entityRegistry;
-    private readonly int _preferredEnumerator;
+    private static bool T12Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager2.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
 
-    private Entity _current;
-    private ComponentManager<T1>.Enumerator _enumerator1;
-    private ComponentManager<T2>.Enumerator _enumerator2;
-    private ComponentManager<T3>.Enumerator _enumerator3;
-    private ComponentManager<T4>.Enumerator _enumerator4;
+    private static bool T13Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager3.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
+
+    private static bool T14Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager4.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity);
+    }
+
+    private static bool T21Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager1.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
+
+    private static bool T23Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager3.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
+
+    private static bool T24Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager4.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity);
+    }
+
+    private static bool T31Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager1.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
+
+    private static bool T32Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager2.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager4.HasComponent(entity);
+    }
+
+    private static bool T34Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager4.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity);
+    }
+
+    private static bool T41Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager1.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity);
+    }
+
+    private static bool T42Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager2.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager3.HasComponent(entity);
+    }
+
+    private static bool T43Filter(View<T1, T2, T3, T4> view, Entity entity)
+    {
+        return view._componentManager3.HasComponent(entity)
+               && view._componentManager1.HasComponent(entity)
+               && view._componentManager2.HasComponent(entity);
+    }
+
+    private readonly EntityRegistry _entityRegistry;
+    private readonly ComponentManager<T1> _componentManager1;
+    private readonly ComponentManager<T2> _componentManager2;
+    private readonly ComponentManager<T3> _componentManager3;
+    private readonly ComponentManager<T4> _componentManager4;
 
     internal View(
         EntityRegistry entityRegistry,
-        ComponentManager<T1>.Enumerator enumerator1,
-        ComponentManager<T2>.Enumerator enumerator2,
-        ComponentManager<T3>.Enumerator enumerator3,
-        ComponentManager<T4>.Enumerator enumerator4)
+        ComponentManager<T1> componentManager1,
+        ComponentManager<T2> componentManager2,
+        ComponentManager<T3> componentManager3,
+        ComponentManager<T4> componentManager4)
     {
         _entityRegistry = entityRegistry;
-        _current = Entity.Null;
-        _enumerator1 = enumerator1;
-        _enumerator2 = enumerator2;
-        _enumerator3 = enumerator3;
-        _enumerator4 = enumerator4;
-
-        _preferredEnumerator = DeterminedPreferredEnumerator(
-            enumerator1.ComponentCount,
-            enumerator2.ComponentCount,
-            enumerator3.ComponentCount,
-            enumerator4.ComponentCount);
+        _componentManager1 = componentManager1;
+        _componentManager2 = componentManager2;
+        _componentManager3 = componentManager3;
+        _componentManager4 = componentManager4;
     }
 
-    /// <inheritdoc />
-    public bool Supports<TComponent>()
-        where TComponent : struct
+    public unsafe ViewEnumerator<View<T1, T2, T3, T4>> GetEnumerator()
     {
-        return typeof(TComponent) == typeof(T1) || typeof(TComponent) == typeof(T2) || typeof(TComponent) == typeof(T3) || typeof(TComponent) == typeof(T4);
-    }
+        var componentCounts = stackalloc int[4];
+        componentCounts[0] = _componentManager1.ComponentCount;
+        componentCounts[1] = _componentManager2.ComponentCount;
+        componentCounts[2] = _componentManager3.ComponentCount;
+        componentCounts[3] = _componentManager4.ComponentCount;
 
-    /// <inheritdoc />
-    bool IView.Has<TComponent>()
-    {
-        return Supports<TComponent>();
-    }
-
-    /// <inheritdoc />
-    public ref TComponent Get<TComponent>()
-        where TComponent : struct
-    {
-        if (typeof(TComponent) == typeof(T1))
-            return ref Unsafe.As<T1, TComponent>(ref _enumerator1.Current);
-
-        if (typeof(TComponent) == typeof(T2))
-            return ref Unsafe.As<T2, TComponent>(ref _enumerator2.Current);
-
-        if (typeof(TComponent) == typeof(T3))
-            return ref Unsafe.As<T3, TComponent>(ref _enumerator3.Current);
-
-        if (typeof(TComponent) == typeof(T4))
-            return ref Unsafe.As<T4, TComponent>(ref _enumerator4.Current);
-
-        throw new InvalidOperationException("The specified component is not part of the view.");
-    }
-
-    public ViewEnumerator<View<T1, T2, T3, T4>> GetEnumerator() => new(this);
-
-    /// <inheritdoc />
-    EntityReference IViewEnumerator.Current => new(_entityRegistry, _current);
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveNext()
-    {
-        if (_preferredEnumerator == 0)
+        var (m1, m2) = MinimumUtil.GetTwoMinimaIndices(componentCounts, 4);
+        return (m1 + 1, m2 + 1) switch
         {
-            while (_enumerator1.MoveNext())
-            {
-                var entityId = _enumerator1.CurrentEntity;
-                if (!_enumerator2.MoveTo(entityId) || !_enumerator3.MoveTo(entityId) || !_enumerator4.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-        else if (_preferredEnumerator == 1)
-        {
-            while (_enumerator2.MoveNext())
-            {
-                var entityId = _enumerator2.CurrentEntity;
-                if (!_enumerator1.MoveTo(entityId) || !_enumerator3.MoveTo(entityId) || !_enumerator4.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-        else if (_preferredEnumerator == 2)
-        {
-            while (_enumerator3.MoveNext())
-            {
-                var entityId = _enumerator3.CurrentEntity;
-                if (!_enumerator1.MoveTo(entityId) || !_enumerator2.MoveTo(entityId) || !_enumerator4.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-        else
-        {
-            while (_enumerator4.MoveNext())
-            {
-                var entityId = _enumerator4.CurrentEntity;
-                if (!_enumerator1.MoveTo(entityId) || !_enumerator2.MoveTo(entityId) || !_enumerator3.MoveTo(entityId))
-                    continue;
-
-                _current = entityId;
-                return true;
-            }
-        }
-
-        _current = Entity.Null;
-        return false;
-    }
-
-    private static int DeterminedPreferredEnumerator(int componentCount1, int componentCount2, int componentCount3, int componentCount4)
-    {
-        var min = Math.Min(componentCount1, Math.Min(componentCount2, Math.Min(componentCount3, componentCount4)));
-        if (min == componentCount1)
-            return 0;
-
-        if (min == componentCount2)
-            return 1;
-
-        return min == componentCount3
-            ? 2
-            : 3;
-    }
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(Entity entity)
-    {
-        return _enumerator1.MoveTo(entity) & _enumerator2.MoveTo(entity) & _enumerator3.MoveTo(entity) & _enumerator4.MoveTo(entity);
+            (1, 2) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T12Filter, _componentManager1.GetEnumerator()),
+            (1, 3) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T13Filter, _componentManager1.GetEnumerator()),
+            (1, 4) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T14Filter, _componentManager1.GetEnumerator()),
+            (2, 1) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T21Filter, _componentManager2.GetEnumerator()),
+            (2, 3) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T23Filter, _componentManager2.GetEnumerator()),
+            (2, 4) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T24Filter, _componentManager2.GetEnumerator()),
+            (3, 1) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T31Filter, _componentManager3.GetEnumerator()),
+            (3, 2) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T32Filter, _componentManager3.GetEnumerator()),
+            (3, 4) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T34Filter, _componentManager3.GetEnumerator()),
+            (4, 1) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T41Filter, _componentManager4.GetEnumerator()),
+            (4, 2) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T42Filter, _componentManager4.GetEnumerator()),
+            (4, 3) => new ViewEnumerator<View<T1, T2, T3, T4>>(_entityRegistry, this, &T43Filter, _componentManager4.GetEnumerator()),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }

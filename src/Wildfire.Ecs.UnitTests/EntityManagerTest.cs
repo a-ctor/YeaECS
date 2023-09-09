@@ -19,9 +19,9 @@ public class EntityManagerTest
     {
         var entityManager = new EntityManager(3);
 
-        Assert.Equal("<1@0>", entityManager.CreateEntity().ToString());
-        Assert.Equal("<2@0>", entityManager.CreateEntity().ToString());
-        Assert.Equal("<3@0>", entityManager.CreateEntity().ToString());
+        Assert.Equal("<0@1>", entityManager.CreateEntity().ToString());
+        Assert.Equal("<1@1>", entityManager.CreateEntity().ToString());
+        Assert.Equal("<2@1>", entityManager.CreateEntity().ToString());
     }
 
     [Fact]
@@ -39,10 +39,10 @@ public class EntityManagerTest
     public void HasEntity()
     {
         var entityManager = new EntityManager(3);
-        Assert.False(entityManager.HasEntity(new Entity(0, 1)));
+        Assert.False(entityManager.HasEntity(new Entity(1, 0)));
 
         entityManager.CreateEntity();
-        Assert.True(entityManager.HasEntity(new Entity(0, 1)));
+        Assert.True(entityManager.HasEntity(new Entity(1, 0)));
     }
 
     [Fact]
@@ -60,6 +60,6 @@ public class EntityManagerTest
     public void DestroyEntity_WithNonExistentEntity_DoesNothing()
     {
         var entityManager = new EntityManager(3);
-        entityManager.DestroyEntity(new Entity(0, 1));
+        entityManager.DestroyEntity(new Entity(1, 1));
     }
 }

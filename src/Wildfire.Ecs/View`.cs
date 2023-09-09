@@ -1,64 +1,18 @@
 ﻿namespace Wildfire.Ecs;
 
-using System.Runtime.CompilerServices;
-
-public class View<T1> : IView, IViewEnumerator
+public class View<T1>
     where T1 : struct
 {
+    private static bool TrueFilter(View<T1> view, Entity entity) => true;
+    
     private readonly EntityRegistry _entityRegistry;
+    private readonly ComponentManager<T1> _componentManager;
 
-    private Entity _current;
-    private ComponentManager<T1>.Enumerator _enumerator;
-
-    internal View(EntityRegistry entityRegistry, ComponentManager<T1>.Enumerator enumerator)
+    internal View(EntityRegistry entityRegistry, ComponentManager<T1> componentManager)
     {
         _entityRegistry = entityRegistry;
-        _current = Entity.Null;
-        _enumerator = enumerator;
+        _componentManager = componentManager;
     }
 
-    /// <inheritdoc />
-    public bool Supports<TComponent>()
-        where TComponent : struct
-    {
-        return typeof(TComponent) == typeof(T1);
-    }
-
-    /// <inheritdoc />
-    bool IView.Has<TComponent>()
-    {
-        return Supports<TComponent>();
-    }
-
-    /// <inheritdoc />
-    public ref TComponent Get<TComponent>()
-        where TComponent : struct
-    {
-        if (typeof(TComponent) == typeof(T1))
-            return ref Unsafe.As<T1, TComponent>(ref _enumerator.Current);
-
-        throw new InvalidOperationException("The specified component is not part of the view.");
-    }
-
-    public ViewEnumerator<View<T1>> GetEnumerator() => new(this);
-
-    /// <inheritdoc />
-    EntityReference IViewEnumerator.Current => new(_entityRegistry, _current);
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveNext()
-    {
-        var result = _enumerator.MoveNext();
-        _current = result
-            ? _enumerator.CurrentEntity
-            : Entity.Null;
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    bool IViewEnumerator.MoveTo(Entity entity)
-    {
-        return _enumerator.MoveTo(entity);
-    }
+    public unsafe ViewEnumerator<View<T1>> GetEnumerator() => new(_entityRegistry, this, &TrueFilter, _componentManager.GetEnumerator());
 }

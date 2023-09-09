@@ -28,7 +28,7 @@ public class ComponentEnumeratorTest
 
     public ComponentEnumeratorTest()
     {
-        _entityRegistry = new EntityRegistry(c_entityCount);
+        _entityRegistry = new EntityRegistry(c_entityCount + 10);
         var random = new Random(c_randomSeed);
 
         for (var i = 0; i < c_entityCount; i++)

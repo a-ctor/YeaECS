@@ -6,16 +6,15 @@ using System.Runtime.CompilerServices;
 
 internal struct DenseEntry
 {
+    // Layout must match the layout in Entity
     public uint Generation;
     public uint IdOrIndex;
 
     public Entity ToEntity()
     {
-        return Generation != 0
-            ? new Entity(Generation, IdOrIndex)
-            : throw new InvalidOperationException();
+        return Unsafe.As<DenseEntry, Entity>(ref this);
     }
-    
+
     /// <inheritdoc />
     public override string ToString()
     {
@@ -39,50 +38,53 @@ internal struct SparseEntry
     }
 }
 
+public struct SparseSetEnumerator : IEnumerator<Entity>
+{
+    private readonly DenseEntry[] _denseEntries;
+    private readonly int _denseCount;
+
+    private int _index = -1;
+
+    internal SparseSetEnumerator(DenseEntry[] denseEntries, int denseCount)
+    {
+        _denseEntries = denseEntries;
+        _denseCount = denseCount;
+    }
+
+    /// <inheritdoc />
+    object IEnumerator.Current => Current;
+
+    /// <inheritdoc />
+    public Entity Current => _denseEntries[_index].ToEntity();
+
+    /// <inheritdoc />
+    public bool MoveNext()
+    {
+        while (_index < _denseCount - 1)
+        {
+            _index++;
+            var index = _index;
+            if (_denseEntries[index].Generation != 0)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc />
+    public void Reset() => _index = -1;
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
+}
+
 /// <summary>
 /// Provides an implementation of a sparse set that also provides efficient enumeration
 /// </summary>
 internal class SparseSet<T> : IEnumerable<Entity>
 {
-    public struct Enumerator : IEnumerator<Entity>
-    {
-        private readonly SparseSet<T> _sparseSet;
-        private int _index = -1;
-
-        public Enumerator(SparseSet<T> sparseSet)
-        {
-            _sparseSet = sparseSet;
-        }
-
-        /// <inheritdoc />
-        object IEnumerator.Current => Current;
-
-        /// <inheritdoc />
-        public Entity Current => _sparseSet._denseEntries[_index].ToEntity();
-
-        /// <inheritdoc />
-        public bool MoveNext()
-        {
-            while (_index < _sparseSet._denseEntries.Length - 1)
-            {
-                _index++;
-                var index = _index;
-                if (_sparseSet._denseEntries[index].Generation != 0)
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        public void Reset() => _index = -1;
-
-        /// <inheritdoc />
-        public void Dispose()
-        {
-        }
-    }
-
     // There are two dense arrays that have the same size and shared indices
     // One stores the value while the other stores metadata
     // Not all indices contain valid entries and the metadata also acts as a free linked list in such a case
@@ -115,6 +117,21 @@ internal class SparseSet<T> : IEnumerable<Entity>
         // Initialize the link
         for (var i = 0; i < _denseEntries.Length; i++)
             _denseEntries[i].IdOrIndex = (uint)(i + 1);
+    }
+
+    private SparseSet(SparseSet<T> other)
+    {
+        _denseValues = new T[other._denseValues.Length];
+        Array.Copy(other._denseValues, _denseValues, _denseValues.Length);
+
+        _denseEntries = new DenseEntry[other._denseEntries.Length];
+        Array.Copy(other._denseEntries, _denseEntries, _denseEntries.Length);
+
+        _denseCount = other._denseCount;
+        _denseFreeHead = other._denseFreeHead;
+
+        _sparseEntities = new SparseEntry[other._sparseEntities.Length];
+        Array.Copy(other._sparseEntities, _sparseEntities, _sparseEntities.Length);
     }
 
     public int Count => _count;
@@ -157,6 +174,8 @@ internal class SparseSet<T> : IEnumerable<Entity>
         _count = 0;
     }
 
+    public SparseSet<T> Clone() => new(this);
+
     /// <summary>
     /// Returns a reference to the value in the sparse set for <paramref name="entity"/>.
     /// Throws an exception if no such value exists.
@@ -173,7 +192,7 @@ internal class SparseSet<T> : IEnumerable<Entity>
         return ref value;
     }
 
-    public Enumerator GetEnumerator() => new(this);
+    public SparseSetEnumerator GetEnumerator() => new(_denseEntries, _denseCount);
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -218,7 +237,7 @@ internal class SparseSet<T> : IEnumerable<Entity>
 
         sparseSetEntry.Generation = entity.Generation;
         sparseSetEntry.Index = unchecked((uint)freeIndex);
-        
+
         ref var denseEntity = ref _denseEntries[freeIndex];
         _denseFreeHead = unchecked((int)denseEntity.IdOrIndex);
         denseEntity.Generation = entity.Generation;
@@ -232,15 +251,28 @@ internal class SparseSet<T> : IEnumerable<Entity>
     }
 
     /// <summary>
-    /// Checks if a value for <paramref name="entity"/> exists in the sparse set.
+    /// Returns a reference to the value in the sparse set for <paramref name="entity"/>,
+    /// or a null reference if no value was found.
     /// </summary>
-    public bool Has(Entity entity)
+    public ref T GetOrNullRef(Entity entity)
     {
         if (entity.Generation == 0)
             throw new ArgumentException("The specified entity is not valid.", nameof(entity));
 
         ref var sparseSetEntry = ref GetSparseSetEntry(entity);
-        return !Unsafe.IsNullRef(ref sparseSetEntry) && sparseSetEntry.Generation == entity.Generation;
+        return ref entity.Generation != sparseSetEntry.Generation
+            ? ref Unsafe.NullRef<T>()
+            : ref _denseValues[sparseSetEntry.Index];
+    }
+
+    /// <summary>
+    /// Checks if a value for <paramref name="entity"/> exists in the sparse set.
+    /// </summary>
+    public bool Has(Entity entity)
+    {
+        var index = entity.Id;
+        var sparseEntities = _sparseEntities;
+        return index < sparseEntities.Length && entity.Generation != 0 && sparseEntities[index].Generation == entity.Generation;
     }
 
     /// <summary>
@@ -325,8 +357,8 @@ internal class SparseSet<T> : IEnumerable<Entity>
     {
         var id = entity.Id;
         var sparseSetEntries = _sparseEntities;
-        return ref id >= sparseSetEntries.Length 
-            ? ref Unsafe.NullRef<SparseEntry>() 
+        return ref id >= sparseSetEntries.Length
+            ? ref Unsafe.NullRef<SparseEntry>()
             : ref sparseSetEntries[id];
     }
 
