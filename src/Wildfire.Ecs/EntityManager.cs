@@ -7,7 +7,7 @@ internal class EntityManager
 {
     private readonly EntityId[] _entities;
 
-    private int _nextId = 1;
+    private uint _nextId = 1;
 
     public int Capacity { get; }
 

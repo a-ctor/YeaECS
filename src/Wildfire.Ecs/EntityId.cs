@@ -10,9 +10,9 @@ public readonly struct EntityId : IEquatable<EntityId>, IComparable<EntityId>, I
 {
     public static readonly EntityId Null = new();
 
-    private readonly int _value;
+    private readonly uint _value;
 
-    public EntityId(int value)
+    public EntityId(uint value)
     {
         _value = value;
     }
@@ -24,7 +24,7 @@ public readonly struct EntityId : IEquatable<EntityId>, IComparable<EntityId>, I
     public override bool Equals(object? obj) => obj is EntityId other && Equals(other);
 
     /// <inheritdoc />
-    public override int GetHashCode() => _value;
+    public override int GetHashCode() => unchecked((int)_value);
 
     /// <inheritdoc />
     public override string ToString() => $"<{_value}>";

@@ -186,11 +186,11 @@ public class ComponentManagerTest
         componentManager.AddComponent(new EntityId(3), new TestComponent(13));
 
         var enumerator = componentManager.GetEnumerator();
-        for (int i = 1; i <= 3; i++)
+        for (var i = 1; i <= 3; i++)
         {
             Assert.True(enumerator.MoveNext());
             Assert.Equal(enumerator.Current.Value, i + 10);
-            Assert.Equal(enumerator.CurrentEntityId, new EntityId(i));
+            Assert.Equal(enumerator.CurrentEntityId, new EntityId((uint)i));
         }
 
         Assert.False(enumerator.MoveNext());
