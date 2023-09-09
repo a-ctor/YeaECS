@@ -31,7 +31,7 @@ internal class EntityManager
         if (EntityCount == Capacity)
             throw new InvalidOperationException("Cannot create entity as the entity capacity has been reached.");
 
-        var entityId = new Entity(_nextId);
+        var entityId = new Entity(0, _nextId); // todo implement support for generations
         _nextId++;
 
         _entities[EntityCount] = entityId;

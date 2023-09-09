@@ -18,7 +18,7 @@ public class ComponentManagerBenchmark
         for (var i = 0; i < N; i++)
         {
             var component = new Component1(1);
-            _initialComponentManager.AddComponent(new Entity((uint)((i + 1) * 2)), component);
+            _initialComponentManager.AddComponent(new Entity(0, (uint)((i + 1) * 2)), component);
         }
 
         _componentManager = new ComponentManager<Component1>(_initialComponentManager.Capacity);
@@ -36,7 +36,7 @@ public class ComponentManagerBenchmark
     {
         var component1 = new Component1(3);
         for (var i = 0; i < 100; i++)
-            _componentManager.AddComponent(new Entity((uint)(i * 2 + 1)), in component1);
+            _componentManager.AddComponent(new Entity(0, (uint)(i * 2 + 1)), in component1);
     }
 
     [Benchmark]
@@ -44,7 +44,7 @@ public class ComponentManagerBenchmark
     {
         var component1 = new Component1(3);
         for (var i = 0; i < 100; i++)
-            _componentManager.AddComponent(new Entity((uint)((N / 2 + i) * 2 + 1)), in component1);
+            _componentManager.AddComponent(new Entity(0, (uint)((N / 2 + i) * 2 + 1)), in component1);
     }
 
     [Benchmark]
@@ -52,6 +52,6 @@ public class ComponentManagerBenchmark
     {
         var component1 = new Component1(3);
         for (var i = 0; i < 100; i++)
-            _componentManager.AddComponent(new Entity((uint)((N - 100 + i) * 2 + 1)), in component1);
+            _componentManager.AddComponent(new Entity(0, (uint)((N - 100 + i) * 2 + 1)), in component1);
     }
 }
