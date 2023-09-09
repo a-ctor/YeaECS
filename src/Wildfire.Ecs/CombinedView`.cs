@@ -1,6 +1,6 @@
 ﻿namespace Wildfire.Ecs;
 
-public struct CombinedView<TView, TOptionalView> : IView, IViewEnumerator
+public class CombinedView<TView, TOptionalView> : IView, IViewEnumerator
     where TView : IView, IViewEnumerator
     where TOptionalView : IView, IOptionalViewEnumerator
 {
@@ -40,7 +40,7 @@ public struct CombinedView<TView, TOptionalView> : IView, IViewEnumerator
         throw new InvalidOperationException("The specified component is not part of the view.");
     }
 
-    public ViewEnumerator<CombinedView<TView, TOptionalView>> GetEnumerator() => new(ref this);
+    public ViewEnumerator<CombinedView<TView, TOptionalView>> GetEnumerator() => new(this);
 
     /// <inheritdoc />
     EntityReference IViewEnumerator.Current => _view.Current;

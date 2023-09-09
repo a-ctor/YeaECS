@@ -46,7 +46,7 @@ public readonly ref struct ComponentAccessor<T>
     {
         return _componentManager != null
             ? new View<T>(_entityRegistry, _componentManager.GetEnumerator())
-            : default;
+            : new View<T>(_entityRegistry, default);
     }
 
     internal ComponentManager<T>.Enumerator GetInternalEnumerator()

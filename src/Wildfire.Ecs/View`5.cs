@@ -2,7 +2,7 @@
 
 using System.Runtime.CompilerServices;
 
-public struct View<T1, T2, T3, T4, T5> : IView, IViewEnumerator
+public class View<T1, T2, T3, T4, T5> : IView, IViewEnumerator
     where T1 : struct
     where T2 : struct
     where T3 : struct
@@ -78,7 +78,7 @@ public struct View<T1, T2, T3, T4, T5> : IView, IViewEnumerator
         throw new InvalidOperationException("The specified component is not part of the view.");
     }
 
-    public ViewEnumerator<View<T1, T2, T3, T4, T5>> GetEnumerator() => new(ref this);
+    public ViewEnumerator<View<T1, T2, T3, T4, T5>> GetEnumerator() => new(this);
 
     /// <inheritdoc />
     EntityReference IViewEnumerator.Current => new(_entityRegistry, _current);

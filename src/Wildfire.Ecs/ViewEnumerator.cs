@@ -1,29 +1,27 @@
 ﻿namespace Wildfire.Ecs;
 
-using System.Runtime.CompilerServices;
-
-public readonly unsafe ref struct ViewEnumerator<TView>
-    where TView : struct, IViewEnumerator
+public readonly ref struct ViewEnumerator<TView>
+    where TView : class, IViewEnumerator
 {
-    private readonly void* _view;
+    private readonly TView _view;
 
-    public ViewEnumerator(ref TView view)
+    public ViewEnumerator(TView view)
     {
-        // This operation is only safe for stack values so we assume that people use views correctly
-        _view = Unsafe.AsPointer(ref view);
+        if (view == null)
+            throw new ArgumentNullException(nameof(view));
+
+        _view = view;
     }
 
-    public EntityReference Current => _view != null
-        ? Unsafe.AsRef<TView>(_view).Current
-        : default;
+    public EntityReference Current => _view.Current;
 
     public bool MoveNext()
     {
-        return _view != null && Unsafe.AsRef<TView>(_view).MoveNext();
+        return _view.MoveNext();
     }
 
     public bool MoveTo(EntityId entityId)
     {
-        return _view != null && Unsafe.AsRef<TView>(_view).MoveTo(entityId);
+        return _view.MoveTo(entityId);
     }
 }
