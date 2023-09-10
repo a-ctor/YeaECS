@@ -4,7 +4,6 @@
 /// Manages a certain component <typeparamref name="TComponent"/> for a set of entities.
 /// </summary>
 internal class ComponentManager<TComponent> : IComponentManager
-    where TComponent : struct
 {
     private readonly SparseSet<TComponent> _sparseSet;
     

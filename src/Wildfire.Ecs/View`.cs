@@ -1,7 +1,6 @@
 ﻿namespace Wildfire.Ecs;
 
 public class View<T1>
-    where T1 : struct
 {
     private static bool TrueFilter(View<T1> view, Entity entity) => true;
     

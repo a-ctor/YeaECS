@@ -40,7 +40,6 @@ public ref struct EntityBuilder
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddComponent<TComponent>(in TComponent component)
-        where TComponent : struct
     {
         _token.EntityRegistry.AddComponent(_token.Entity, in component);
     }

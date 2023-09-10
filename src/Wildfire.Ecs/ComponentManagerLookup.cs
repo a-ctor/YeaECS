@@ -23,7 +23,6 @@ internal struct ComponentManagerLookup
     }
 
     public ComponentManager<T> GetOrAdd<T>()
-        where T : struct
     {
         var index = ComponentIndex<T>.Index;
         var componentManager = index < _componentManagerLookup.Length
@@ -45,7 +44,6 @@ internal struct ComponentManagerLookup
     }
 
     public bool TryGet<T>(out ComponentManager<T> componentManager)
-        where T : struct
     {
         var index = ComponentIndex<T>.Index;
         componentManager = (index < _componentManagerLookup.Length

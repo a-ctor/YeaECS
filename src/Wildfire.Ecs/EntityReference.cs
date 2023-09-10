@@ -56,7 +56,6 @@ public readonly struct EntityReference
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddComponent<TComponent>(in TComponent component)
-        where TComponent : struct
     {
         EntityRegistry.AddComponent(Entity, in component);
     }
@@ -67,7 +66,6 @@ public readonly struct EntityReference
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool HasComponent<TComponent>()
-        where TComponent : struct
     {
         return EntityRegistry.HasComponent<TComponent>(Entity);
     }
@@ -78,7 +76,6 @@ public readonly struct EntityReference
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref TComponent GetComponent<TComponent>()
-        where TComponent : struct
     {
         return ref EntityRegistry.GetComponent<TComponent>(Entity);
     }
@@ -89,7 +86,6 @@ public readonly struct EntityReference
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref TComponent GetOrAddComponent<TComponent>()
-        where TComponent : struct
     {
         return ref EntityRegistry.GetOrAddComponent<TComponent>(Entity);
     }
@@ -105,7 +101,6 @@ public readonly struct EntityReference
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref TComponent TryGetComponent<TComponent>(out bool success)
-        where TComponent : struct
     {
         return ref EntityRegistry.TryGetComponent<TComponent>(Entity, out success);
     }
@@ -116,7 +111,6 @@ public readonly struct EntityReference
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveComponent<TComponent>()
-        where TComponent : struct
     {
         EntityRegistry.RemoveComponent<TComponent>(Entity);
     }

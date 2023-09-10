@@ -1,8 +1,6 @@
 ﻿namespace Wildfire.Ecs;
 
 public class View<T1, T2>
-    where T1 : struct
-    where T2 : struct
 {
     private static bool T21Filter(View<T1, T2> view, Entity entity)
     {

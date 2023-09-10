@@ -105,7 +105,6 @@ public class EntityRegistry
     /// Throws if the specified entity does not exist.
     /// </summary>
     public void AddComponent<TComponent>(Entity entity, in TComponent component)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -119,7 +118,6 @@ public class EntityRegistry
     /// Throws if the specified entity does not exist.
     /// </summary>
     public bool HasComponent<TComponent>(Entity entity)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -132,7 +130,6 @@ public class EntityRegistry
     /// Throws if the specified entity is not found or no component is found.
     /// </summary>
     public ref TComponent GetComponent<TComponent>(Entity entity)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -147,7 +144,6 @@ public class EntityRegistry
     /// Throws if the specified entity is not found
     /// </summary>
     public ref TComponent GetOrAddComponent<TComponent>(Entity entity)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -161,7 +157,6 @@ public class EntityRegistry
     /// Throws if the specified entity is not found
     /// </summary>
     public ref TComponent GetComponentOrNullRef<TComponent>(Entity entity)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -180,7 +175,6 @@ public class EntityRegistry
     /// The data of this dummy reference is undefined.
     /// </remarks>
     public ref TComponent TryGetComponent<TComponent>(Entity entity, out bool success)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -196,7 +190,6 @@ public class EntityRegistry
     /// Throws if the specified entity does not exist.
     /// </summary>
     public void RemoveComponent<TComponent>(Entity entity)
-        where TComponent : struct
     {
         if (!HasEntity(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
@@ -211,7 +204,6 @@ public class EntityRegistry
     /// Provides better performance for bulk operations.
     /// </summary>
     public ComponentAccessor<TComponent> GetComponentAccessor<TComponent>()
-        where TComponent : struct
     {
         var componentManager = _componentManagers.GetOrAdd<TComponent>();
         return new ComponentAccessor<TComponent>(this, componentManager);
@@ -225,7 +217,6 @@ public class EntityRegistry
     /// It is best to not store view instances as they are cheap to create.
     /// </remarks>
     public View<T> ViewOf<T>()
-        where T : struct
     {
         return new View<T>(this, _componentManagers.GetOrAdd<T>());
     }
@@ -238,8 +229,6 @@ public class EntityRegistry
     /// It is best to not store view instances as they are cheap to create.
     /// </remarks>
     public View<T1, T2> ViewOf<T1, T2>()
-        where T1 : struct
-        where T2 : struct
     {
         return new View<T1, T2>(
             this,
@@ -255,9 +244,6 @@ public class EntityRegistry
     /// It is best to not store view instances as they are cheap to create.
     /// </remarks>
     public View<T1, T2, T3> ViewOf<T1, T2, T3>()
-        where T1 : struct
-        where T2 : struct
-        where T3 : struct
     {
         return new View<T1, T2, T3>(
             this,
@@ -274,10 +260,6 @@ public class EntityRegistry
     /// It is best to not store view instances as they are cheap to create.
     /// </remarks>
     public View<T1, T2, T3, T4> ViewOf<T1, T2, T3, T4>()
-        where T1 : struct
-        where T2 : struct
-        where T3 : struct
-        where T4 : struct
     {
         return new View<T1, T2, T3, T4>(
             this,
@@ -295,11 +277,6 @@ public class EntityRegistry
     /// It is best to not store view instances as they are cheap to create.
     /// </remarks>
     public View<T1, T2, T3, T4, T5> ViewOf<T1, T2, T3, T4, T5>()
-        where T1 : struct
-        where T2 : struct
-        where T3 : struct
-        where T4 : struct
-        where T5 : struct
     {
         return new View<T1, T2, T3, T4, T5>(
             this,

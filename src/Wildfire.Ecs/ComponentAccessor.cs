@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 /// Provides a read-only view of a <see cref="ComponentManager{T}"/>, which improves performance for bulk operations.
 /// </summary>
 public readonly ref struct ComponentAccessor<TComponent>
-    where TComponent : struct
 {
     private readonly EntityRegistry _entityRegistry;
     private readonly ComponentManager<TComponent> _componentManager;
