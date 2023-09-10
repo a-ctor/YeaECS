@@ -4,15 +4,11 @@ A low-level entity component system (ECS) targeting .NET Standard 2.0.
 
 ## Features
 
-- Any structure can be a component
-- Efficient iteration over entities with certain components using views
+- Any type (reference or value type) can be a component
 - No component/view registration is necessary
-- Basic lifetime events
+- Get direct references to the components
 - Minimal allocations
-
-## Trade-offs
-
-This ECS is built to deliver fast views over components without any previous setup. This has the effect that adding components to older entities is a slower operation. The older the component the slower the operation is (best: `O(1)` worst: `O(N)`).
+- Pretty speedy
 
 ## Usage
 
@@ -30,8 +26,13 @@ transformComponent.Position = new Vector2(1, 1);
 var view = entityRegistry.ViewOf<TransformComponent>();
 foreach (var entity in view)
 {
-  transformComponent = ref view.Get<TransformComponent>();
-  Console.WriteLine($"entity: {entity.Id}; position: {transformComponent.Position}");
+  transformComponent = ref entity.GetComponent<TransformComponent>();
+  Console.WriteLine($"entity: {entity}; position: {transformComponent.Position}");
 }
 ```
 
+## Implementation details
+
+Entities are implemented as generational identifiers (`uint Generation` and `uint Id`), with the ids being reused in different generations. Components are stored in a sparse set using the entity id as index. This allows accessing and manipulating components in constant time. 
+
+Iteration over one or more components is done in linear time as it depends on the number of registered components. Using views to search for entities with a certain set of components is very efficient as the smallest component count determines the iteration time.
