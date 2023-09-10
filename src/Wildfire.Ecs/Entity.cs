@@ -6,12 +6,8 @@ using System.Runtime.CompilerServices;
 /// A reference to an entity in the ECS.
 /// The references entity might not exists anymore.
 /// </summary>
-public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>, IComparable
+public readonly struct Entity : IEquatable<Entity>
 {
-    // todo remove comparability after introducing the sparse set -> wrong and then not needed anymore
-
-    public static readonly Entity Null = new();
-
     internal readonly uint Generation;
     internal readonly uint Id;
 
@@ -27,12 +23,6 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>, ICompar
         get => Unsafe.As<Entity, long>(ref Unsafe.AsRef(in this));
     }
 
-    internal void Deconstruct(out uint generation, out uint id)
-    {
-        generation = Generation;
-        id = Id;
-    }
-
     /// <inheritdoc />
     public bool Equals(Entity other) => Value == other.Value;
 
@@ -45,27 +35,7 @@ public readonly struct Entity : IEquatable<Entity>, IComparable<Entity>, ICompar
     /// <inheritdoc />
     public override string ToString() => $"<{Id}@{Generation}>";
 
-    /// <inheritdoc />
-    public int CompareTo(Entity other) => Id.CompareTo(other.Id);
-
-    /// <inheritdoc />
-    public int CompareTo(object? obj)
-    {
-        if (ReferenceEquals(null, obj))
-            return 1;
-
-        return obj is Entity other ? CompareTo(other) : throw new ArgumentException($"Object must be of type {nameof(Entity)}");
-    }
-
     public static bool operator ==(Entity left, Entity right) => left.Equals(right);
 
     public static bool operator !=(Entity left, Entity right) => !left.Equals(right);
-
-    public static bool operator <(Entity left, Entity right) => left.Id < right.Id;
-
-    public static bool operator >(Entity left, Entity right) => left.Id > right.Id;
-
-    public static bool operator <=(Entity left, Entity right) => left.Id <= right.Id;
-
-    public static bool operator >=(Entity left, Entity right) => left.Id >= right.Id;
 }
