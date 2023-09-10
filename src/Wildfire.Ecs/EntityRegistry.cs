@@ -79,11 +79,16 @@ public class EntityRegistry
     }
 
     /// <summary>
-    /// Checks if an entity with the specified <paramref name="entity"/> exists.
+    /// Adds the specified <paramref name="component"/> to the entity with the specified <paramref name="entity"/>.
+    /// Throws if the specified entity does not exist.
     /// </summary>
-    public bool HasEntity(Entity entity)
+    public void AddComponent<TComponent>(Entity entity, in TComponent component)
     {
-        return _entityManager.HasEntity(entity);
+        if (!IsAlive(entity))
+            throw new InvalidOperationException("The specified entity does not exist.");
+
+        var componentManager = _componentManagers.GetOrAdd<TComponent>();
+        componentManager.AddComponent(entity, in component);
     }
 
     /// <summary>
@@ -101,28 +106,23 @@ public class EntityRegistry
     }
 
     /// <summary>
-    /// Adds the specified <paramref name="component"/> to the entity with the specified <paramref name="entity"/>.
-    /// Throws if the specified entity does not exist.
-    /// </summary>
-    public void AddComponent<TComponent>(Entity entity, in TComponent component)
-    {
-        if (!HasEntity(entity))
-            throw new InvalidOperationException("The specified entity does not exist.");
-
-        var componentManager = _componentManagers.GetOrAdd<TComponent>();
-        componentManager.AddComponent(entity, in component);
-    }
-
-    /// <summary>
     /// Checks if the entity with the specified <paramref name="entity"/> has a component of <typeparamref name="TComponent"/>.
     /// Throws if the specified entity does not exist.
     /// </summary>
     public bool HasComponent<TComponent>(Entity entity)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
         return _componentManagers.TryGet<TComponent>(out var componentManager) && componentManager.HasComponent(entity);
+    }
+
+    /// <summary>
+    /// Checks if an entity with the specified <paramref name="entity"/> exists.
+    /// </summary>
+    public bool IsAlive(Entity entity)
+    {
+        return _entityManager.HasEntity(entity);
     }
 
     /// <summary>
@@ -131,7 +131,7 @@ public class EntityRegistry
     /// </summary>
     public ref TComponent GetComponent<TComponent>(Entity entity)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (!_componentManagers.TryGet<TComponent>(out var componentManager))
             throw new InvalidOperationException($"Could not find a component '{typeof(TComponent)}' for entity {entity}.");
@@ -145,7 +145,7 @@ public class EntityRegistry
     /// </summary>
     public ref TComponent GetOrAddComponent<TComponent>(Entity entity)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
         var componentManager = _componentManagers.GetOrAdd<TComponent>();
@@ -158,7 +158,7 @@ public class EntityRegistry
     /// </summary>
     public ref TComponent GetComponentOrNullRef<TComponent>(Entity entity)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
 
         var componentManager = _componentManagers.GetOrAdd<TComponent>();
@@ -176,7 +176,7 @@ public class EntityRegistry
     /// </remarks>
     public ref TComponent TryGetComponent<TComponent>(Entity entity, out bool success)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (_componentManagers.TryGet<TComponent>(out var componentManager))
             return ref componentManager.TryGetComponent(entity, out success);
@@ -191,7 +191,7 @@ public class EntityRegistry
     /// </summary>
     public void RemoveComponent<TComponent>(Entity entity)
     {
-        if (!HasEntity(entity))
+        if (!IsAlive(entity))
             throw new InvalidOperationException("The specified entity does not exist.");
         if (!_componentManagers.TryGet<TComponent>(out var componentManager))
             return;

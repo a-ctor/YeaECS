@@ -23,7 +23,7 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
 
         var entity = entityRegistry.CreateEntity();
-        Assert.True(entity.Exists);
+        Assert.True(entity.IsAlive);
         Assert.Same(entityRegistry, entity.EntityRegistry);
     }
 
@@ -44,7 +44,7 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
         var entity = entityRegistry.CreateEntity();
 
-        Assert.True(entity.Exists);
+        Assert.True(entity.IsAlive);
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class EntityRegistryTest
     {
         var entityRegistry = new EntityRegistry(3);
 
-        Assert.False(entityRegistry.HasEntity(new Entity(1, 1)));
+        Assert.False(entityRegistry.IsAlive(new Entity(1, 1)));
     }
 
     [Fact]
@@ -395,7 +395,7 @@ public class EntityRegistryTest
         EntityDeletedEventHandler handler = deletedEntity =>
         {
             Assert.Equal(entity.Entity, deletedEntity);
-            Assert.False(entityRegistry.HasEntity(deletedEntity));
+            Assert.False(entityRegistry.IsAlive(deletedEntity));
             called++;
         };
         entityRegistry.OnEntityDeleted += handler;

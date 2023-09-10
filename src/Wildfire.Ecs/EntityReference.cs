@@ -11,12 +11,12 @@ public readonly struct EntityReference
     public readonly Entity Entity;
 
     /// <summary>
-    /// Checks if this entity exists.
+    /// Checks if this entity is alive.
     /// </summary>
-    public bool Exists
+    public bool IsAlive
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => EntityRegistry.HasEntity(Entity);
+        get => EntityRegistry.IsAlive(Entity);
     }
 
     public EntityReference(EntityRegistry entityRegistry, Entity entity)
