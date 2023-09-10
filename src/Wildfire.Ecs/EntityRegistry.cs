@@ -287,5 +287,5 @@ public class EntityRegistry
             _componentManagers.GetOrAdd<T5>());
     }
 
-    internal IEnumerable<IComponentManager> GetComponentManagers => _componentManagers.Values;
+    internal IEnumerable<IComponentManager> GetComponentManagers() => _componentManagers.Values;
 }

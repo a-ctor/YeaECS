@@ -1,5 +1,6 @@
 ﻿namespace Wildfire.Ecs;
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 public ref struct EntityBuilder
@@ -21,7 +22,7 @@ public ref struct EntityBuilder
         get
         {
             var entity = _token.Entity;
-            return _token.EntityRegistry.GetComponentManagers
+            return _token.EntityRegistry.GetComponentManagers()
                 .Select(e => (e.TryGetComponentBoxed(entity, out var component), component))
                 .Where(e => e.Item1)
                 .Select(e => e.component)

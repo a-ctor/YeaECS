@@ -33,7 +33,7 @@ public readonly struct EntityReference
         get
         {
             var entity = Entity;
-            return EntityRegistry.GetComponentManagers
+            return EntityRegistry.GetComponentManagers()
                 .Select(e => (e.TryGetComponentBoxed(entity, out var component), component))
                 .Where(e => e.Item1)
                 .Select(e => e.component)
