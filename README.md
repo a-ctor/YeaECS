@@ -1,4 +1,4 @@
-# Wildfire.Ecs
+# YeaECS
 
 A low-level entity component system (ECS) targeting .NET Standard 2.0.
 
