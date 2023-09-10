@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wildfire.Ecs.Benchmark", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wildfire.Ecs.UnitTests", "src\Wildfire.Ecs.UnitTests\Wildfire.Ecs.UnitTests.csproj", "{820F4D97-592A-4E87-9963-7D592C9AE0CE}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{B9BA010D-BAD5-4B41-B08A-ECC49ADD8C31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9BA010D-BAD5-4B41-B08A-ECC49ADD8C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9BA010D-BAD5-4B41-B08A-ECC49ADD8C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05E86CE2-B635-4D70-8172-5D3AA48D352C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{05E86CE2-B635-4D70-8172-5D3AA48D352C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05E86CE2-B635-4D70-8172-5D3AA48D352C}.Release|Any CPU.ActiveCfg = Release|Any CPU
