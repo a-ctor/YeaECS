@@ -287,9 +287,9 @@ public class EntityRegistryTest
         var entityRegistry = new EntityRegistry(3);
         var entity = entityRegistry.CreateEntity();
 
-        var component = entity.TryGetComponent<TestComponent>(out var success);
+        ref var component = ref entity.TryGetComponent<TestComponent>(out var success);
         Assert.False(success);
-        Assert.Equal(0, component.Value);
+        Assert.True(Unsafe.IsNullRef(ref component));
     }
 
     [Fact]

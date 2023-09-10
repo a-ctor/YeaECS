@@ -182,7 +182,7 @@ public class EntityRegistry
             return ref componentManager.TryGetComponent(entity, out success);
 
         success = false;
-        return ref RefDummy<TComponent>.Value;
+        return ref Unsafe.NullRef<TComponent>();
     }
 
     /// <summary>
